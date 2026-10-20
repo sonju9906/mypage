@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAIRMATCH — 마이페이지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<!--
+  mypage.html — 마이페이지
+  index.html / a.html 과 같은 토큰과 상단바. 계정 드롭다운의 네 메뉴와 1:1:
+    계정 정보 → #account   분석 기록 → #history   저장한 사진 → #saved   보안 설정 → #security
+
+  서버: mypage_api.py (/me, /me/history, /me/photos, /me/settings)
+        auth_api.py   (/auth/password, /auth/account, /auth/logout)
+  로그인하지 않아도 이 브라우저 기준으로 볼 수 있고, 로그인하면 계정 기준이 된다.
+  파일로 직접 열거나 ?mock=1 이면 가짜 데이터로 화면만 볼 수 있다.
+-->
+<style>
+:root{
+  --ink:#16130F; --ink-2:#3D362D; --ink-3:#7A7168;
+  --line:#E4DED4; --line-2:#CFC6B9;
+  --paper:#FBF9F6; --paper-2:#F3EEE7; --surface:#FFFFFF;
+  --accent:#8A7355; --dark:#16130F;
+  --danger:#9A3B2E; --danger-bg:#F8EEEA; --danger-line:#E6CFC7; --ok:#3E6B4A;
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px; --s6:64px; --s7:96px;
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+*{ box-sizing:border-box; }
+html{ scroll-behavior:smooth; scroll-padding-top:84px; }
+body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased; overflow-x:hidden; }
+img{ display:block; max-width:100%; }
+button, input{ font-family:inherit; }
+[hidden]{ display:none !important; }
+.wrap{ max-width:1240px; margin:0 auto; padding:0 var(--s4); }
+@media (max-width:640px){ .wrap{ padding:0 var(--s2); } }
+
+.eyebrow{ font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); margin:0 0 var(--s2); }
+.display{ font-family:var(--serif); font-weight:300; font-size:clamp(40px,5.4vw,72px); line-height:1.02; letter-spacing:-.01em; margin:0; }
+.display em{ font-style:italic; }
+.h-ko{ font-size:clamp(19px,2vw,24px); font-weight:700; line-height:1.5; letter-spacing:-.02em; margin:0; }
+.body-ko{ color:var(--ink-2); margin:0; max-width:52ch; }
+.muted{ color:var(--ink-3); }
+.small{ font-size:13px; }
+
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:13px 26px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; font-weight:500; letter-spacing:.06em; text-decoration:none; cursor:pointer; border-radius:2px; transition:background .18s, color .18s, border-color .18s; }
+.btn:hover{ background:transparent; color:var(--ink); }
+.btn.line{ background:transparent; color:var(--ink); }
+.btn.line:hover{ background:var(--ink); color:var(--paper); }
+.btn.sm{ padding:9px 16px; font-size:12px; }
+.btn.danger{ background:var(--danger); border-color:var(--danger); color:#FFF; }
+.btn.danger:hover{ background:transparent; color:var(--danger); }
+.btn.danger.line{ background:transparent; color:var(--danger); }
+.btn.danger.line:hover{ background:var(--danger); color:#FFF; }
+.btn[disabled]{ background:var(--line); border-color:var(--line); color:var(--ink-3); cursor:not-allowed; }
+.txt-btn{ background:none; border:0; padding:4px 0; font-size:12px; letter-spacing:.04em; color:var(--ink-3); cursor:pointer; text-decoration:underline; text-underline-offset:3px; text-decoration-color:var(--line-2); }
+.txt-btn:hover{ color:var(--ink); text-decoration-color:var(--ink); }
+.txt-btn.danger:hover{ color:var(--danger); text-decoration-color:var(--danger); }
+
+/* 상단바 — index.html 과 동일 */
+.topbar{ position:sticky; top:0; z-index:40; background:#16130F; color:#FBF9F6; }
+.topbar .wrap{ display:grid; grid-template-columns:1fr auto 1fr; align-items:center; height:60px; }
+.wordmark{ font-family:var(--sans); font-size:14px; font-weight:600; letter-spacing:.2em; text-decoration:none; color:#FBF9F6; justify-self:start; }
+.nav{ display:flex; align-items:center; gap:var(--s5); justify-self:center; }
+.nav a.link{ font-size:12px; color:rgba(251,249,246,.78); text-decoration:none; letter-spacing:.04em; }
+.nav a.link:hover, .nav a.link.on{ color:#FFF; }
+.topbar .account-wrap{ justify-self:end; position:relative; }
+.icon-btn{ display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; color:rgba(251,249,246,.86); background:transparent; border:0; cursor:pointer; text-decoration:none; }
+.icon-btn:hover{ color:#FFF; }
+.icon-btn svg{ width:20px; height:20px; }
+#userStatusBtn{ position:relative; }
+#userStatusBtn::after{ content:""; position:absolute; top:7px; right:7px; width:6px; height:6px; border-radius:50%; background:var(--accent); }
+@media (max-width:760px){ .nav{ display:none; } .topbar .wrap{ grid-template-columns:1fr auto; } }
+.account-panel{ display:none; position:absolute; right:0; top:calc(100% + 12px); width:264px; background:var(--surface); border:1px solid var(--line); border-radius:2px; padding:var(--s3); z-index:50; color:var(--ink); }
+.account-panel .label{ font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); }
+.account-panel .who{ font-size:17px; font-weight:700; margin:6px 0 var(--s2); padding-bottom:var(--s2); border-bottom:1px solid var(--line); }
+.account-panel ul{ list-style:none; margin:0 0 var(--s2); padding:0; }
+.account-panel li{ font-size:13px; color:var(--ink-2); padding:10px 0; border-bottom:1px solid var(--paper-2); cursor:pointer; }
+.account-panel li:hover{ color:var(--ink); }
+.account-panel .out{ width:100%; padding:10px; background:transparent; border:1px solid var(--line); border-radius:2px; font-size:12px; color:var(--ink-3); cursor:pointer; letter-spacing:.04em; }
+.account-panel .out:hover{ border-color:var(--ink); color:var(--ink); }
+
+/* 머리 + 레이아웃 */
+.page-head{ padding:var(--s7) 0 var(--s5); border-bottom:1px solid var(--line); }
+.page-head .grid{ display:flex; justify-content:space-between; align-items:flex-end; gap:var(--s4); flex-wrap:wrap; }
+.page-head .body-ko{ margin-top:var(--s2); }
+.layout{ display:grid; grid-template-columns:200px minmax(0,1fr); gap:var(--s6); padding:var(--s5) 0 var(--s7); }
+@media (max-width:900px){ .layout{ grid-template-columns:1fr; gap:0; padding-top:0; } }
+.side{ position:sticky; top:92px; align-self:start; }
+.side a{ display:flex; justify-content:space-between; align-items:baseline; padding:12px 0; border-bottom:1px solid var(--line); font-size:13px; color:var(--ink-3); text-decoration:none; transition:color .18s, padding .18s; }
+.side a:first-child{ border-top:1px solid var(--ink); }
+.side a:hover{ color:var(--ink); }
+.side a.on{ color:var(--ink); font-weight:700; padding-left:var(--s1); }
+.side a .n{ font-family:var(--serif); font-size:17px; font-weight:400; color:var(--ink-3); font-variant-numeric:tabular-nums; }
+@media (max-width:900px){
+  .side{ top:60px; z-index:30; background:var(--paper); display:flex; overflow-x:auto; border-bottom:1px solid var(--line); margin:0 calc(-1 * var(--s4)); padding:0 var(--s4); scrollbar-width:none; }
+  .side::-webkit-scrollbar{ display:none; }
+  .side a, .side a:first-child{ flex:none; border:0; border-bottom:2px solid transparent; padding:14px 0; margin-right:var(--s3); gap:6px; }
+  .side a.on{ padding-left:0; border-bottom-color:var(--ink); }
+  .side a .n{ font-size:14px; }
+}
+@media (max-width:640px){ .side{ margin:0 calc(-1 * var(--s2)); padding:0 var(--s2); } }
+.sec{ padding-bottom:var(--s6); }
+.sec + .sec{ padding-top:var(--s5); border-top:1px solid var(--ink); }
+@media (max-width:900px){ .sec:first-child{ padding-top:var(--s4); } }
+.sec-head{ display:flex; justify-content:space-between; align-items:flex-end; gap:var(--s3); flex-wrap:wrap; margin-bottom:var(--s4); }
+.sec-head .eyebrow{ margin-bottom:6px; }
+
+/* 계정 정보 */
+.meters{ display:grid; grid-template-columns:repeat(3,1fr); border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+@media (max-width:640px){ .meters{ grid-template-columns:1fr; } }
+.meter{ padding:var(--s3) var(--s3) var(--s3) 0; min-width:0; }
+.meter + .meter{ border-left:1px solid var(--line); padding-left:var(--s3); }
+@media (max-width:640px){ .meter + .meter{ border-left:0; border-top:1px solid var(--line); padding-left:0; } }
+.meter .lbl{ font-size:10px; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); }
+.meter .val{ font-size:20px; font-weight:700; letter-spacing:-.01em; margin-top:6px; line-height:1.4; overflow-wrap:anywhere; }
+.meter .val.serif{ font-family:var(--serif); font-size:36px; font-weight:300; letter-spacing:0; line-height:1.15; }
+.meter .sub{ font-size:12px; color:var(--ink-3); margin-top:4px; overflow-wrap:anywhere; }
+.dots{ display:flex; gap:6px; margin-top:12px; }
+.dots i{ width:28px; height:6px; background:var(--ink); }
+.dots i.used{ background:var(--line); }
+.notice{ margin-top:var(--s3); padding:var(--s2) 0 var(--s2) 14px; border-left:2px solid var(--accent); font-size:13px; color:var(--ink-2); display:flex; justify-content:space-between; align-items:center; gap:var(--s3); flex-wrap:wrap; }
+.notice b{ color:var(--ink); }
+.notice .acts{ display:flex; gap:var(--s1); }
+
+/* 분석 기록 */
+.hist{ border-top:1px solid var(--ink); }
+.hrow{ border-bottom:1px solid var(--line); }
+.hrow .main{ display:grid; grid-template-columns:120px minmax(0,1fr) minmax(0,220px) auto; gap:var(--s3); align-items:center; padding:var(--s3) 0; }
+@media (max-width:760px){ .hrow .main{ grid-template-columns:1fr auto; gap:var(--s1) var(--s2); } .hrow .when{ grid-column:1 / -1; } .hrow .bars{ grid-column:1 / -1; } .hrow .acts{ grid-row:2; grid-column:2; } }
+.hrow .when{ font-size:12px; color:var(--ink-3); font-variant-numeric:tabular-nums; line-height:1.5; }
+.hrow .shape{ display:flex; align-items:baseline; gap:12px; flex-wrap:wrap; }
+.hrow .shape .en{ font-family:var(--serif); font-size:30px; font-weight:300; line-height:1.1; }
+.hrow .shape .ko{ font-size:14px; font-weight:700; }
+.tag{ display:inline-block; font-size:10px; letter-spacing:.12em; padding:3px 8px; border:1px solid var(--line-2); border-radius:1px; color:var(--ink-2); white-space:nowrap; line-height:1.6; }
+.tag.accent{ border-color:var(--accent); color:var(--accent); }
+.bars{ display:grid; gap:6px; }
+.bars .row{ display:grid; grid-template-columns:56px 1fr 36px; align-items:center; gap:10px; font-size:12px; color:var(--ink-2); }
+.bars .bar{ height:3px; background:var(--line); position:relative; }
+.bars .bar i{ position:absolute; inset:0 auto 0 0; background:var(--ink); }
+.bars .row + .row .bar i{ background:var(--accent); }
+.bars .pct{ text-align:right; font-variant-numeric:tabular-nums; color:var(--ink); }
+.acts{ display:flex; gap:var(--s2); justify-content:flex-end; align-items:center; white-space:nowrap; }
+.expand{ padding:0 0 var(--s4); }
+.reco{ display:grid; grid-template-columns:repeat(auto-fill, minmax(220px,1fr)); border-top:1px solid var(--line); border-left:1px solid var(--line); }
+.reco .it{ background:var(--surface); padding:var(--s2) var(--s2) 14px; display:flex; flex-direction:column; gap:4px; border-right:1px solid var(--line); border-bottom:1px solid var(--line); }
+.reco .rk{ font-size:10px; letter-spacing:.18em; color:var(--ink-3); }
+.reco .nm{ font-size:15px; font-weight:700; }
+.reco .ad{ font-size:12px; color:var(--ink-3); line-height:1.6; }
+.reco-note{ font-size:12px; color:var(--ink-3); margin:var(--s1) 0 0; }
+
+/* 저장한 사진 */
+.filters{ display:flex; gap:6px; margin-bottom:var(--s3); flex-wrap:wrap; }
+.chip{ padding:7px 14px; background:transparent; border:1px solid var(--line-2); border-radius:1px; font-size:13px; color:var(--ink-2); cursor:pointer; transition:all .18s; }
+.chip:hover{ border-color:var(--ink); color:var(--ink); }
+.chip.on{ background:var(--ink); border-color:var(--ink); color:var(--paper); }
+.chip .c{ font-family:var(--serif); margin-left:4px; }
+.photos{ display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:var(--s4) var(--s3); }
+@media (max-width:640px){ .photos{ grid-template-columns:1fr 1fr; gap:var(--s3) var(--s2); } }
+.photo .ph{ position:relative; aspect-ratio:3/4; background:var(--paper-2); border:1px solid var(--line); overflow:hidden; cursor:zoom-in; padding:0; width:100%; display:block; }
+.photo .ph img{ width:100%; height:100%; object-fit:cover; transition:transform .4s; }
+.photo .ph:hover img{ transform:scale(1.03); }
+.photo .ph .tag{ position:absolute; top:10px; left:10px; background:rgba(251,249,246,.92); border-color:transparent; }
+.photo .nm{ font-size:15px; font-weight:700; margin:var(--s2) 0 0; line-height:1.45; word-break:keep-all; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.photo .meta{ font-size:12px; color:var(--ink-3); }
+.photo .acts{ justify-content:flex-start; margin-top:4px; }
+
+.empty{ padding:var(--s4); border:1px dashed var(--line-2); text-align:center; color:var(--ink-3); font-size:13px; }
+.empty a{ color:var(--ink); }
+.skel{ height:84px; border-bottom:1px solid var(--line); background:linear-gradient(90deg,var(--paper) 25%,var(--paper-2) 37%,var(--paper) 63%); background-size:400% 100%; animation:shimmer 1.6s ease infinite; }
+@keyframes shimmer{ 0%{background-position:100% 0} 100%{background-position:0 0} }
+
+/* 크게 보기 */
+.lightbox{ position:fixed; inset:0; z-index:70; background:rgba(22,19,15,.86); display:flex; align-items:center; justify-content:center; padding:var(--s4); }
+.lightbox figure{ margin:0; max-width:min(560px,100%); }
+.lightbox img{ max-height:78vh; width:auto; margin:0 auto; border:1px solid rgba(255,255,255,.12); }
+.lightbox figcaption{ color:#FBF9F6; font-size:14px; margin-top:var(--s2); text-align:center; }
+.lightbox figcaption small{ display:block; color:rgba(251,249,246,.6); font-size:12px; }
+.lightbox .close{ position:absolute; top:16px; right:16px; width:44px; height:44px; background:none; border:0; color:#FBF9F6; font-size:28px; cursor:pointer; }
+
+/* 보안 설정 */
+.setting{ display:grid; grid-template-columns:1fr auto; gap:var(--s3); align-items:center; padding:var(--s3) 0; border-top:1px solid var(--line); }
+.setting.last{ border-bottom:1px solid var(--line); }
+.setting .t{ font-size:15px; font-weight:700; }
+.setting .d{ font-size:13px; color:var(--ink-3); margin-top:2px; max-width:56ch; }
+.setting .form{ grid-column:1 / -1; }
+.switch{ position:relative; width:44px; height:24px; flex:none; }
+.switch input{ position:absolute; opacity:0; inset:0; margin:0; cursor:pointer; z-index:1; }
+.switch span{ position:absolute; inset:0; background:var(--line-2); border-radius:12px; transition:background .18s; }
+.switch span::after{ content:""; position:absolute; top:3px; left:3px; width:18px; height:18px; background:#FFF; border-radius:50%; transition:transform .18s; }
+.switch input:checked + span{ background:var(--ink); }
+.switch input:checked + span::after{ transform:translateX(20px); }
+.switch input:focus-visible + span{ outline:2px solid var(--accent); outline-offset:2px; }
+.mini-form{ display:grid; grid-template-columns:repeat(2,minmax(0,1fr)) auto; gap:var(--s1); align-items:start; padding-top:var(--s2); }
+.mini-form.one{ grid-template-columns:minmax(0,1fr) auto; max-width:480px; }
+@media (max-width:640px){ .mini-form, .mini-form.one{ grid-template-columns:1fr; } }
+.mini-form input{ width:100%; padding:11px 12px; border:1px solid var(--line-2); border-radius:2px; background:var(--surface); font-size:14px; color:var(--ink); }
+.mini-form input:focus{ outline:none; border-color:var(--ink); }
+.form-msg{ grid-column:1 / -1; font-size:12px; margin:0; min-height:18px; color:var(--ink-3); }
+.form-msg.bad{ color:var(--danger); }
+.form-msg.good{ color:var(--ok); }
+.store{ display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--line); border:1px solid var(--line); margin:var(--s4) 0; }
+@media (max-width:760px){ .store{ grid-template-columns:1fr; } }
+.store div{ background:var(--surface); padding:var(--s2) var(--s2) var(--s3); }
+.store .k{ font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); }
+.store .v{ font-size:15px; font-weight:700; margin:4px 0 2px; }
+.store .v.no{ color:var(--accent); }
+.store p{ margin:0; font-size:12px; color:var(--ink-3); line-height:1.6; }
+.danger-zone{ border:1px solid var(--danger-line); background:var(--danger-bg); }
+.danger-zone .row{ display:grid; grid-template-columns:1fr auto; gap:var(--s3); align-items:center; padding:var(--s3); }
+.danger-zone .row + .row{ border-top:1px solid var(--danger-line); }
+@media (max-width:640px){ .danger-zone .row{ grid-template-columns:1fr; } }
+.danger-zone .t{ font-size:15px; font-weight:700; color:var(--danger); }
+.danger-zone .d{ font-size:13px; color:var(--ink-2); margin-top:2px; }
+.danger-zone .form{ grid-column:1 / -1; }
+.confirm{ display:flex; gap:var(--s1); flex-wrap:wrap; }
+
+.toast{ position:fixed; left:50%; bottom:28px; transform:translate(-50%,20px); opacity:0; background:var(--ink); color:var(--paper); font-size:13px; padding:12px 20px; border-radius:2px; transition:opacity .2s, transform .2s; z-index:80; pointer-events:none; max-width:calc(100% - 32px); }
+.toast.show{ opacity:1; transform:translate(-50%,0); }
+.toast.err{ background:var(--danger); }
+
+footer{ background:var(--dark); color:rgba(255,255,255,.5); padding:var(--s5) 0; font-size:11px; }
+footer .wrap{ display:flex; justify-content:space-between; gap:var(--s3); flex-wrap:wrap; }
+footer .wordmark{ color:#FFF; font-size:13px; }
+.devbar{ padding:10px var(--s4); font-size:12px; color:#6B5518; background:#FBF3DC; border-bottom:1px solid #EFDFA8; text-align:center; }
+</style>
+</head>
+<body>
+
+<div class="devbar" id="devbar" hidden><strong>MOCK 모드</strong> — 서버 없이 가짜 데이터로 보여 주는 화면입니다. 바꾼 내용은 새로고침하면 사라져요.</div>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="index.html" class="wordmark">HAIRMATCH</a>
+    <nav class="nav">
+      <a class="link" href="index.html#upload">시작하기</a>
+      <a class="link" href="index.html#styles">스타일</a>
+      <a class="link on" href="mypage.html">마이페이지</a>
+    </nav>
+    <div class="account-wrap">
+      <a href="log.html?next=mypage.html" id="guestBtn" class="icon-btn" aria-label="로그인" title="로그인">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      </a>
+      <div id="userStatusBtn" class="icon-btn" style="display:none" role="button" aria-label="내 계정" title="내 계정">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+      </div>
+      <div class="account-panel" id="sidebarRight">
+        <div class="label">Account</div>
+        <div class="who" id="userNameSlot">사용자 명</div>
+        <ul>
+          <li data-go="account">계정 정보</li>
+          <li data-go="history">분석 기록</li>
+          <li data-go="saved">저장한 사진</li>
+          <li data-go="security">보안 설정</li>
+        </ul>
+        <button class="out" onclick="HM_AUTH.logout('index.html')">로그아웃</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<section class="page-head">
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <p class="eyebrow">My Page</p>
+        <h1 class="display">Your <em>archive.</em></h1>
+        <p class="body-ko">분석한 얼굴형과 저장한 합성 사진을 한곳에서 다시 볼 수 있어요.</p>
+      </div>
+      <a class="btn" href="index.html#upload">새 사진으로 분석하기</a>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+  <div class="layout">
+    <nav class="side" id="side" aria-label="마이페이지 메뉴">
+      <a href="#account" data-sec="account">계정 정보</a>
+      <a href="#history" data-sec="history">분석 기록 <span class="n" id="nHistory">—</span></a>
+      <a href="#saved" data-sec="saved">저장한 사진 <span class="n" id="nSaved">—</span></a>
+      <a href="#security" data-sec="security">보안 설정</a>
+    </nav>
+
+    <main>
+      <!-- ══════════════ 계정 정보 ══════════════ -->
+      <section class="sec" id="account">
+        <div class="sec-head">
+          <div><p class="eyebrow">Account</p><h2 class="h-ko">계정 정보</h2></div>
+        </div>
+        <div class="meters">
+          <div class="meter">
+            <div class="lbl">Name</div>
+            <div class="val" id="accName">—</div>
+            <div class="sub" id="accSub">&nbsp;</div>
+          </div>
+          <div class="meter">
+            <div class="lbl" id="accSinceLbl">Joined</div>
+            <div class="val serif" id="accSince">—</div>
+            <div class="sub" id="accSinceSub">&nbsp;</div>
+          </div>
+          <div class="meter">
+            <div class="lbl">AI Generation</div>
+            <div class="val serif" id="accQuota">—</div>
+            <div class="dots" id="accDots"></div>
+            <div class="sub" id="accQuotaSub"></div>
+          </div>
+        </div>
+        <div class="notice" id="guestNotice" hidden>
+          <span>지금은 <b>로그인 없이</b> 이 브라우저 기준으로 기록되고 있어요. 로그인하면 지금 기록이 계정으로 옮겨지고 다른 기기에서도 볼 수 있어요.</span>
+          <span class="acts">
+            <a class="btn sm" href="log.html?next=mypage.html">로그인</a>
+            <a class="btn sm line" href="signin.html?next=mypage.html">회원가입</a>
+          </span>
+        </div>
+      </section>
+
+      <!-- ══════════════ 분석 기록 ══════════════ -->
+      <section class="sec" id="history">
+        <div class="sec-head">
+          <div><p class="eyebrow">History</p><h2 class="h-ko">분석 기록</h2></div>
+          <p class="body-ko muted small">최근 20건까지 보관해요. 업로드한 사진은 저장하지 않고 얼굴형 결과만 남아요.</p>
+        </div>
+        <div class="hist" id="histList"><div class="skel"></div><div class="skel"></div></div>
+      </section>
+
+      <!-- ══════════════ 저장한 사진 ══════════════ -->
+      <section class="sec" id="saved">
+        <div class="sec-head">
+          <div><p class="eyebrow">Saved Photos</p><h2 class="h-ko">저장한 사진</h2></div>
+          <p class="body-ko muted small">미용실에 가기 전에 이 사진을 보여 주세요.</p>
+        </div>
+        <div class="filters" id="filters" role="tablist" aria-label="사진 종류">
+          <button class="chip on" data-kind="" role="tab" aria-selected="true">전체<span class="c" id="cAll"></span></button>
+          <button class="chip" data-kind="synth" role="tab" aria-selected="false">추천 스타일<span class="c" id="cSynth"></span></button>
+          <button class="chip" data-kind="prompt" role="tab" aria-selected="false">직접 만든 스타일<span class="c" id="cPrompt"></span></button>
+        </div>
+        <div class="photos" id="photoList"></div>
+      </section>
+
+      <!-- ══════════════ 보안 설정 ══════════════ -->
+      <section class="sec" id="security">
+        <div class="sec-head">
+          <div><p class="eyebrow">Privacy &amp; Security</p><h2 class="h-ko">보안 설정</h2></div>
+        </div>
+
+        <!-- 로그인했을 때만 -->
+        <div id="acctSettings" hidden>
+          <div class="setting">
+            <div>
+              <div class="t">비밀번호 변경</div>
+              <div class="d">바꾸면 다른 기기에 남아 있던 로그인은 모두 해제돼요.</div>
+            </div>
+            <button class="btn sm line" id="btnPwOpen">변경하기</button>
+            <form class="form mini-form" id="pwForm" hidden novalidate>
+              <input type="password" id="pwCur" placeholder="현재 비밀번호" autocomplete="current-password" aria-label="현재 비밀번호">
+              <input type="password" id="pwNew" placeholder="새 비밀번호 (8자 이상, 영문+숫자)" autocomplete="new-password" aria-label="새 비밀번호">
+              <button class="btn sm" type="submit">저장</button>
+              <p class="form-msg" id="pwMsg"></p>
+            </form>
+          </div>
+          <div class="setting">
+            <div>
+              <div class="t">로그아웃</div>
+              <div class="d" id="acctEmail">이 기기에서 로그아웃해요.</div>
+            </div>
+            <button class="btn sm line" onclick="HM_AUTH.logout('index.html')">로그아웃</button>
+          </div>
+        </div>
+
+        <div class="setting last">
+          <div>
+            <div class="t">분석 기록 저장</div>
+            <div class="d">끄면 앞으로 하는 분석은 기록에 남지 않아요. 이미 있는 기록은 그대로예요.</div>
+          </div>
+          <label class="switch"><input type="checkbox" id="setHistory" aria-label="분석 기록 저장"><span></span></label>
+        </div>
+
+        <div class="store">
+          <div><div class="k">Uploaded Photo</div><div class="v no">저장 안 함</div><p>얼굴형 분석과 합성에만 쓰고 서버에 남기지 않아요.</p></div>
+          <div><div class="k">Analysis</div><div class="v">얼굴형 · 확률만</div><p>얼굴형 이름과 확률, 선택한 성별, 시각만 남아요.</p></div>
+          <div><div class="k">Saved Photos</div><div class="v">합성 결과만</div><p>저장을 누른 합성 사진과 직접 만든 결과만 보관해요.</p></div>
+        </div>
+
+        <div class="danger-zone">
+          <div class="row">
+            <div>
+              <div class="t">내 기록 전체 삭제</div>
+              <div class="d">분석 기록과 저장한 사진이 모두 지워지고 되돌릴 수 없어요. 무료 생성 횟수는 다시 채워지지 않아요.</div>
+            </div>
+            <div id="wipeBox"><button class="btn danger line sm" id="btnWipe">전체 삭제</button></div>
+          </div>
+          <div class="row" id="leaveRow" hidden>
+            <div>
+              <div class="t">회원 탈퇴</div>
+              <div class="d">계정과 모든 기록·사진을 즉시 삭제해요. 확인을 위해 비밀번호를 입력해 주세요.</div>
+            </div>
+            <button class="btn danger line sm" id="btnLeaveOpen">탈퇴하기</button>
+            <form class="form mini-form one" id="leaveForm" hidden novalidate>
+              <input type="password" id="leavePw" placeholder="비밀번호" autocomplete="current-password" aria-label="비밀번호">
+              <button class="btn sm danger" type="submit">탈퇴</button>
+              <p class="form-msg" id="leaveMsg"></p>
+            </form>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span class="wordmark">HAIRMATCH</span>
+    <span>합성 결과는 참고용이며 실제 시술 결과와 다를 수 있습니다</span>
+  </div>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden role="dialog" aria-modal="true" aria-label="사진 크게 보기">
+  <button class="close" id="lbClose" aria-label="닫기">×</button>
+  <figure><img id="lbImg" alt=""><figcaption id="lbCap"></figcaption></figure>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script>
+const IS_FILE = location.protocol === 'file:';
+const CONFIG = Object.assign({ BACKEND_URL:'', USE_MOCK:IS_FILE }, window.HM_CONFIG || {});
+const MOCK = HM_AUTH.MOCK || CONFIG.USE_MOCK;
+
+const SHAPE_KO = { Heart:'하트형', Oblong:'긴형', Oval:'계란형', Round:'둥근형', Square:'사각형' };
+const GENDER_KO = { female:'여성', male:'남성' };
+const KIND_KO = { synth:'추천 스타일', prompt:'직접 만든 스타일' };
+const shapeKo = c => SHAPE_KO[c] || c || '—';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const $ = id => document.getElementById(id);
+const state = { me:null, history:[], photos:[], kind:'' };
+
+/* ── API ── */
+async function api(path, opt = {}) {
+  if (MOCK) return mockApi(path, opt);
+  return HM_AUTH.call(path, opt);
+}
+function toast(msg, isErr = false) {
+  const t = $('toast');
+  t.textContent = msg; t.classList.toggle('err', isErr); t.classList.add('show');
+  clearTimeout(toast._t); toast._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+function fmtDate(iso, withTime = true) {
+  const d = new Date(iso);
+  if (isNaN(d)) return '—';
+  const p = n => String(n).padStart(2, '0');
+  const day = `${d.getFullYear()}.${p(d.getMonth() + 1)}.${p(d.getDate())}`;
+  return withTime ? `${day}<br>${p(d.getHours())}:${p(d.getMinutes())}` : day;
+}
+
+/* ── 상단바 드롭다운 ── */
+$('userStatusBtn').addEventListener('click', e => {
+  e.stopPropagation();
+  const p = $('sidebarRight'); p.style.display = p.style.display === 'block' ? 'none' : 'block';
+});
+document.addEventListener('click', () => { $('sidebarRight').style.display = 'none'; });
+$('sidebarRight').addEventListener('click', e => {
+  e.stopPropagation();
+  const go = e.target.closest('li')?.dataset.go;
+  if (go) { $('sidebarRight').style.display = 'none'; location.hash = go; }
+});
+
+/* ═══════════ 계정 정보 ═══════════ */
+function paintAccount() {
+  const me = state.me, acct = me.account;
+  if (acct) {
+    $('accName').textContent = acct.name + ' 님';
+    $('accSub').textContent = acct.email;
+    $('accSinceLbl').textContent = 'Joined';
+    $('accSince').innerHTML = fmtDate(acct.created_at, false);
+    const days = Math.max(0, Math.floor((Date.now() - new Date(acct.created_at)) / 864e5));
+    $('accSinceSub').textContent = days ? `가입한 지 ${days}일` : '오늘 가입';
+    $('acctEmail').textContent = `${acct.email} 계정에서 로그아웃해요.`;
+  } else {
+    $('accName').textContent = `게스트 #${me.guest_tag}`;
+    $('accSub').textContent = '로그인 없이 이용 중';
+    $('accSinceLbl').textContent = 'First Visit';
+    $('accSince').innerHTML = fmtDate(me.first_seen, false);
+    const days = Math.max(0, Math.floor((Date.now() - new Date(me.first_seen)) / 864e5));
+    $('accSinceSub').textContent = days ? `${days}일째 이용 중` : '오늘 처음 방문';
+  }
+  const q = me.quota;
+  $('accQuota').innerHTML = acct
+    ? `${q.remaining}<span style="font-size:20px;color:var(--ink-3)"> / ${q.limit}</span>`
+    : `<span style="font-size:20px;color:var(--ink-3)">로그인 필요</span>`;
+  $('accDots').innerHTML = acct ? Array.from({ length:q.limit }, (_, i) => `<i class="${i < q.used ? 'used' : ''}"></i>`).join('') : '';
+  $('accQuotaSub').textContent = acct ? '프롬프트로 직접 만들기 무료 횟수' : '로그인하면 무료 2회를 쓸 수 있어요';
+  $('guestNotice').hidden = !!acct;
+  $('acctSettings').hidden = !acct;
+  $('leaveRow').hidden = !acct;
+  $('setHistory').checked = me.settings.save_history;
+}
+function paintCounts() {
+  $('nHistory').textContent = state.history.length;
+  $('nSaved').textContent = state.photos.length;
+}
+
+/* ═══════════ 분석 기록 ═══════════ */
+function paintHistory() {
+  const box = $('histList');
+  paintCounts();
+  if (!state.history.length) {
+    box.innerHTML = `<div class="empty" style="border-top:0">아직 분석 기록이 없어요. <a href="index.html#upload">사진으로 얼굴형 분석하기</a></div>`;
+    return;
+  }
+  box.innerHTML = state.history.map(h => {
+    const bars = (h.distribution || []).slice(0, 2).map(t => {
+      const pct = Math.round((t.probability || 0) * 100);
+      return `<div class="row"><span>${esc(shapeKo(t.code))}</span><span class="bar"><i style="width:${pct}%"></i></span><span class="pct">${pct}%</span></div>`;
+    }).join('');
+    return `
+      <div class="hrow" data-id="${h.id}">
+        <div class="main">
+          <div class="when">${fmtDate(h.created_at)}</div>
+          <div class="shape">
+            <span class="en">${esc(h.face_shape)}.</span>
+            <span class="ko">${esc(h.name_ko || shapeKo(h.face_shape))}</span>
+            <span class="tag">${esc(GENDER_KO[h.gender] || h.gender)}</span>
+            ${h.ambiguous ? `<span class="tag accent">두 유형 혼합</span>` : ''}
+          </div>
+          <div class="bars">${bars}</div>
+          <div class="acts">
+            <button class="txt-btn" data-act="reco">추천 다시 보기</button>
+            <button class="txt-btn danger" data-act="del">삭제</button>
+          </div>
+        </div>
+        <div class="expand" hidden></div>
+      </div>`;
+  }).join('');
+}
+$('histList').addEventListener('click', async e => {
+  const btn = e.target.closest('button[data-act]');
+  if (!btn) return;
+  const row = btn.closest('.hrow');
+  const h = state.history.find(x => x.id === +row.dataset.id);
+  if (btn.dataset.act === 'del') {
+    try {
+      await api(`/me/history/${h.id}`, { method:'DELETE' });
+      state.history = state.history.filter(x => x.id !== h.id);
+      row.remove();
+      state.history.length ? paintCounts() : paintHistory();
+      toast('기록을 삭제했어요');
+    } catch (_) { toast('삭제하지 못했어요', true); }
+    return;
+  }
+  const ex = row.querySelector('.expand');
+  if (!ex.hidden) { ex.hidden = true; btn.textContent = '추천 다시 보기'; return; }
+  ex.hidden = false; btn.textContent = '접기';
+  if (ex.dataset.loaded) return;
+  ex.innerHTML = '<div class="skel" style="height:110px;border:0"></div>';
+  try {
+    const list = MOCK ? mockRecommend(h.gender)
+      : await (await fetch(`${CONFIG.BACKEND_URL}/recommend?shape=${encodeURIComponent(h.face_shape)}&gender=${encodeURIComponent(h.gender)}`)).json();
+    if (!Array.isArray(list) || !list.length) throw new Error('EMPTY');
+    ex.innerHTML = `<div class="reco">${list.sort((a, b) => a.rank - b.rank).map(s => `
+      <div class="it"><span class="rk">RANK ${s.rank}</span><span class="nm">${esc(s.name_ko)}</span><span class="ad">${esc(s.advice || '')}</span></div>`).join('')}</div>
+      <p class="reco-note">합성 사진은 사진을 올려 분석한 뒤 결과 화면의 <b>사진 저장</b>으로 남길 수 있어요.</p>`;
+    ex.dataset.loaded = '1';
+  } catch (_) {
+    ex.innerHTML = '<div class="empty">추천을 불러오지 못했어요. 서버(web_main)가 켜져 있는지 확인해 주세요.</div>';
+  }
+});
+
+/* ═══════════ 저장한 사진 ═══════════ */
+const imgSrc = p => MOCK ? p.image_url : CONFIG.BACKEND_URL + p.image_url;
+function paintPhotos() {
+  paintCounts();
+  const n = k => state.photos.filter(p => !k || p.kind === k).length;
+  $('cAll').textContent = n('') || ''; $('cSynth').textContent = n('synth') || ''; $('cPrompt').textContent = n('prompt') || '';
+  const list = state.photos.filter(p => !state.kind || p.kind === state.kind);
+  if (!list.length) {
+    $('photoList').innerHTML = `<div class="empty" style="grid-column:1/-1">${
+      state.kind === 'prompt'
+        ? '직접 만든 사진이 없어요. 추천 결과 화면 아래 <b>프롬프트로 직접 만들기</b>로 만든 사진이 여기에 모여요.'
+        : '저장한 사진이 없어요. 추천 결과 화면에서 마음에 드는 스타일을 고른 뒤 <b>사진 저장</b>을 눌러 보세요.'}</div>`;
+    return;
+  }
+  $('photoList').innerHTML = list.map(p => {
+    const meta = [p.face_shape && shapeKo(p.face_shape), GENDER_KO[p.gender], fmtDate(p.created_at, false)].filter(Boolean);
+    return `
+      <div class="photo" data-id="${p.id}">
+        <button class="ph" data-act="zoom" aria-label="${esc(p.title)} 크게 보기">
+          <span class="tag">${KIND_KO[p.kind] || ''}</span>
+          <img src="${esc(imgSrc(p))}" alt="${esc(p.title)} 합성 결과" loading="lazy">
+        </button>
+        <p class="nm">${esc(p.title)}</p>
+        <div class="meta">${meta.map(esc).join(' · ')}</div>
+        <div class="acts">
+          <a class="txt-btn" href="${esc(imgSrc(p))}" download="hairmatch_${p.id}.jpg">내려받기</a>
+          <button class="txt-btn danger" data-act="del">삭제</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+$('filters').addEventListener('click', e => {
+  const c = e.target.closest('.chip');
+  if (!c) return;
+  state.kind = c.dataset.kind;
+  document.querySelectorAll('#filters .chip').forEach(x => {
+    x.classList.toggle('on', x === c); x.setAttribute('aria-selected', x === c);
+  });
+  paintPhotos();
+});
+$('photoList').addEventListener('click', async e => {
+  const b = e.target.closest('[data-act]');
+  if (!b) return;
+  const id = +b.closest('.photo').dataset.id;
+  const p = state.photos.find(x => x.id === id);
+  if (b.dataset.act === 'zoom') return openLightbox(p);
+  if (b.dataset.act === 'del') {
+    if (b.dataset.armed !== '1') {               // 한 번 더 누르면 삭제
+      b.dataset.armed = '1'; b.textContent = '정말 삭제?';
+      setTimeout(() => { b.dataset.armed = ''; b.textContent = '삭제'; }, 2500);
+      return;
+    }
+    try {
+      await api(`/me/photos/${id}`, { method:'DELETE' });
+      state.photos = state.photos.filter(x => x.id !== id);
+      paintPhotos(); toast('사진을 삭제했어요');
+    } catch (_) { toast('삭제하지 못했어요', true); }
+  }
+});
+function openLightbox(p) {
+  $('lbImg').src = imgSrc(p); $('lbImg').alt = p.title;
+  $('lbCap').innerHTML = `${esc(p.title)}<small>${esc(KIND_KO[p.kind] || '')} · ${fmtDate(p.created_at, false)}</small>`;
+  $('lightbox').hidden = false; $('lbClose').focus();
+}
+function closeLightbox() { $('lightbox').hidden = true; }
+$('lightbox').addEventListener('click', e => { if (e.target.id === 'lightbox' || e.target.id === 'lbClose') closeLightbox(); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLightbox(); });
+
+/* ═══════════ 보안 설정 ═══════════ */
+$('setHistory').addEventListener('change', async e => {
+  const on = e.target.checked;
+  try {
+    await api('/me/settings', { method:'PATCH', json:{ save_history:on } });
+    state.me.settings.save_history = on;
+    toast(on ? '이제부터 분석 기록을 남겨요' : '이제부터 분석 기록을 남기지 않아요');
+  } catch (_) { e.target.checked = !on; toast('설정을 바꾸지 못했어요', true); }
+});
+
+function formMsg(id, text, kind) { $(id).textContent = text; $(id).className = 'form-msg ' + (kind || ''); }
+$('btnPwOpen').addEventListener('click', () => { $('pwForm').hidden = !$('pwForm').hidden; if (!$('pwForm').hidden) $('pwCur').focus(); });
+$('pwForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const cur = $('pwCur').value, nw = $('pwNew').value;
+  if (!cur || !nw) return formMsg('pwMsg', '두 칸을 모두 입력해 주세요.', 'bad');
+  if (nw.length < 8 || !/[A-Za-z]/.test(nw) || !/\d/.test(nw)) return formMsg('pwMsg', '새 비밀번호는 8자 이상, 영문과 숫자를 함께 써 주세요.', 'bad');
+  try {
+    await api('/auth/password', { json:{ current:cur, new:nw } });
+    $('pwCur').value = $('pwNew').value = '';
+    formMsg('pwMsg', '비밀번호를 바꿨어요.', 'good');
+  } catch (err) {
+    formMsg('pwMsg', err.code === 'WRONG_PASSWORD' ? '현재 비밀번호가 맞지 않아요.' : '바꾸지 못했어요. 다시 시도해 주세요.', 'bad');
+  }
+});
+
+$('btnLeaveOpen').addEventListener('click', () => { $('leaveForm').hidden = !$('leaveForm').hidden; if (!$('leaveForm').hidden) $('leavePw').focus(); });
+$('leaveForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!$('leavePw').value) return formMsg('leaveMsg', '비밀번호를 입력해 주세요.', 'bad');
+  try {
+    await api('/auth/account', { method:'DELETE', json:{ password:$('leavePw').value } });
+    try { localStorage.removeItem('isLoggedIn'); localStorage.removeItem('userName'); } catch (_) {}
+    location.href = 'index.html';
+  } catch (err) {
+    formMsg('leaveMsg', err.code === 'WRONG_PASSWORD' ? '비밀번호가 맞지 않아요.' : '탈퇴하지 못했어요. 다시 시도해 주세요.', 'bad');
+  }
+});
+
+$('wipeBox').addEventListener('click', async e => {
+  const id = e.target.id, box = $('wipeBox');
+  if (id === 'btnWipe') {
+    box.innerHTML = `<div class="confirm"><button class="btn sm line" id="wipeNo">취소</button><button class="btn sm danger" id="wipeYes">정말 삭제</button></div>`;
+  } else if (id === 'wipeNo') {
+    box.innerHTML = `<button class="btn danger line sm" id="btnWipe">전체 삭제</button>`;
+  } else if (id === 'wipeYes') {
+    e.target.disabled = true; e.target.textContent = '삭제 중…';
+    try { await api('/me', { method:'DELETE' }); await load(); toast('모든 기록을 삭제했어요'); }
+    catch (_) { toast('삭제하지 못했어요', true); }
+    box.innerHTML = `<button class="btn danger line sm" id="btnWipe">전체 삭제</button>`;
+  }
+});
+
+/* ═══════════ 목차 ═══════════ */
+const sideLinks = [...document.querySelectorAll('#side a')];
+function markSide(id) {
+  sideLinks.forEach(a => a.classList.toggle('on', a.dataset.sec === id));
+  const on = sideLinks.find(a => a.dataset.sec === id);
+  if (on && matchMedia('(max-width:900px)').matches) on.scrollIntoView({ inline:'nearest', block:'nearest' });
+}
+const io = new IntersectionObserver(ents => ents.filter(x => x.isIntersecting).forEach(x => markSide(x.target.id)),
+                                    { rootMargin:'-40% 0px -55% 0px' });
+document.querySelectorAll('main .sec').forEach(s => io.observe(s));
+
+/* ═══════════ 진입 ═══════════ */
+async function load() {
+  const [me, history, photos] = await Promise.all([api('/me'), api('/me/history'), api('/me/photos')]);
+  Object.assign(state, { me, history, photos });
+  paintAccount(); paintHistory(); paintPhotos();
+}
+async function boot() {
+  $('devbar').hidden = !MOCK;
+  try { await load(); }
+  catch (err) {
+    console.error('[mypage]', err);
+    $('histList').innerHTML = `<div class="empty" style="border-top:0">마이페이지를 불러오지 못했어요. 서버가 켜져 있는지 확인해 주세요. (${esc(err.code || err.message)})</div>`;
+    toast('서버에 연결하지 못했어요', true);
+  }
+  markSide((location.hash || '#account').slice(1));
+  if (location.hash) document.querySelector(location.hash)?.scrollIntoView();
+}
+
+/* ═══════════ MOCK — 서버 없이 화면 확인용 ═══════════ */
+const ago = h => new Date(Date.now() - h * 36e5).toISOString();
+function mockImage(seed, hue) {
+  const c = document.createElement('canvas'); c.width = 300; c.height = 400;
+  const g = c.getContext('2d');
+  const gr = g.createLinearGradient(0, 0, 300, 400);
+  gr.addColorStop(0, `hsl(${hue} 18% 88%)`); gr.addColorStop(1, `hsl(${hue} 14% 74%)`);
+  g.fillStyle = gr; g.fillRect(0, 0, 300, 400);
+  g.fillStyle = `hsl(${hue} 16% 52%)`; g.beginPath(); g.ellipse(150, 175, 62, 80, 0, 0, 7); g.fill();
+  g.fillStyle = `hsl(${hue} 22% 28%)`; g.font = '600 13px sans-serif'; g.textAlign = 'center'; g.fillText('MOCK · ' + seed, 150, 330);
+  return c.toDataURL('image/jpeg', .85);
+}
+const mockDb = (() => {
+  const name = localStorage.getItem('userName');
+  return {
+    me: { account: name ? { name, email:'demo@hairmatch.kr', created_at:ago(24 * 3) } : null,
+          guest_tag: name ? null : 'K3F9QA', first_seen:ago(24 * 6),
+          quota:{ limit:2, used:1, remaining:1 }, settings:{ save_history:true } },
+    history: [
+      { id:3, created_at:ago(2), gender:'female', face_shape:'Oval', name_ko:'계란형', ambiguous:true,
+        distribution:[{code:'Oval',probability:.48},{code:'Round',probability:.39}] },
+      { id:2, created_at:ago(27), gender:'female', face_shape:'Heart', name_ko:'하트형', ambiguous:false,
+        distribution:[{code:'Heart',probability:.71},{code:'Oval',probability:.16}] },
+    ],
+    photos: [
+      { id:3, created_at:ago(1),  kind:'synth',  title:'허쉬컷', face_shape:'Oval', gender:'female', hue:30 },
+      { id:2, created_at:ago(2),  kind:'synth',  title:'턱선 단발', face_shape:'Oval', gender:'female', hue:24 },
+      { id:1, created_at:ago(26), kind:'prompt', title:'밝은 갈색 굵은 웨이브 장발', hue:36 },
+    ].map(p => ({ ...p, image_url: mockImage(p.title, p.hue) })),
+  };
+})();
+function mockRecommend(gender) {
+  return gender === 'male'
+    ? [{slug:'regent',name_ko:'리젠트 컷',rank:1,advice:'이마를 드러내 시원하고 깔끔한 인상을 줍니다.'},
+       {slug:'dandy',name_ko:'댄디컷',rank:2,advice:'내린 앞머리로 부드럽고 단정한 느낌을 줍니다.'}]
+    : [{slug:'tucked_bob',name_ko:'턱선 단발',rank:1,advice:'균형 잡힌 얼굴형이라 턱선 단발의 또렷한 라인이 잘 살아납니다.'},
+       {slug:'hush',name_ko:'허쉬컷',rank:2,advice:'가벼운 레이어가 얼굴선을 자연스럽게 감쌉니다.'},
+       {slug:'long_wave',name_ko:'롱 웨이브',rank:3,advice:'긴 웨이브로 부드럽고 여성스러운 인상을 줍니다.'}];
+}
+async function mockApi(path, opt) {
+  await new Promise(r => setTimeout(r, 200));
+  const m = opt.method || (opt.json ? 'POST' : 'GET');
+  const clone = x => JSON.parse(JSON.stringify(x));
+  if (m === 'GET') return clone(path === '/me' ? mockDb.me : mockDb[path.split('/')[2]]);
+  if (path === '/me' && m === 'DELETE') { mockDb.history = []; mockDb.photos = []; return {}; }
+  if (path === '/me/settings') { mockDb.me.settings.save_history = opt.json.save_history; return opt.json; }
+  if (path === '/auth/password') return { changed:true };
+  if (path === '/auth/account') { localStorage.removeItem('userName'); return {}; }
+  const [, , kind, key] = path.split('/');
+  mockDb[kind] = mockDb[kind].filter(x => String(x.id) !== key);
+  return {};
+}
+
+boot();
+</script>
+</body>
+</html>

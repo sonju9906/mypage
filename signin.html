@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAIRMATCH — 회원가입</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<!--
+  signin.html — 회원가입
+  서버는 auth_api.py (POST /auth/signup). 가입하면 바로 로그인되고,
+  이 브라우저에서 게스트로 남긴 분석 기록·사진이 새 계정으로 옮겨진다.
+  비밀번호 규칙(8자 이상, 영문 + 숫자)은 서버 validate_password() 와 같다.
+-->
+<style>
+:root{
+  --ink:#16130F; --ink-2:#3D362D; --ink-3:#7A7168;
+  --line:#E4DED4; --line-2:#CFC6B9;
+  --paper:#FBF9F6; --paper-2:#F3EEE7; --surface:#FFFFFF;
+  --accent:#8A7355; --dark:#16130F;
+  --danger:#9A3B2E; --danger-bg:#F8EEEA; --ok:#3E6B4A;
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px; --s6:64px; --s7:96px;
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column; }
+button, input{ font-family:inherit; }
+[hidden]{ display:none !important; }
+.wrap{ max-width:1240px; margin:0 auto; padding:0 var(--s4); width:100%; }
+@media (max-width:640px){ .wrap{ padding:0 var(--s2); } }
+
+.topbar{ background:#16130F; color:#FBF9F6; }
+.topbar .wrap{ display:flex; align-items:center; justify-content:space-between; height:60px; }
+.wordmark{ font-size:14px; font-weight:600; letter-spacing:.2em; text-decoration:none; color:#FBF9F6; }
+.topbar a.link{ font-size:12px; color:rgba(251,249,246,.78); text-decoration:none; letter-spacing:.04em; }
+.topbar a.link:hover{ color:#FFF; }
+
+.auth{ flex:1; display:grid; grid-template-columns:1fr 1fr; }
+@media (max-width:900px){ .auth{ grid-template-columns:1fr; } }
+.auth .intro{ background:var(--paper-2); border-right:1px solid var(--line); display:flex; align-items:center; justify-content:flex-end; padding:var(--s7) var(--s6); }
+.auth .intro > div{ max-width:440px; width:100%; }
+.auth .pane{ display:flex; align-items:center; padding:var(--s6) var(--s6) var(--s7); }
+.auth .pane > div{ max-width:400px; width:100%; }
+@media (max-width:900px){
+  .auth .intro{ border-right:0; border-bottom:1px solid var(--line); padding:var(--s5) var(--s4) var(--s4); justify-content:flex-start; }
+  .auth .pane{ padding:var(--s5) var(--s4) var(--s6); }
+  .auth .intro .store{ display:none; }
+}
+@media (max-width:640px){ .auth .intro, .auth .pane{ padding-left:var(--s2); padding-right:var(--s2); } }
+
+.eyebrow{ font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); margin:0 0 var(--s2); }
+.display{ font-family:var(--serif); font-weight:300; font-size:clamp(44px,5.4vw,76px); line-height:1; letter-spacing:-.01em; margin:0; }
+.display em{ font-style:italic; }
+.lead{ color:var(--ink-2); margin:var(--s3) 0 0; max-width:36ch; }
+.store{ margin-top:var(--s5); border-top:1px solid var(--ink); }
+.store div{ display:grid; grid-template-columns:120px 1fr; gap:var(--s2); padding:14px 0; border-bottom:1px solid var(--line); font-size:13px; }
+.store dt, .store .k{ font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); padding-top:3px; }
+.store .v{ color:var(--ink-2); }
+.store .v b{ color:var(--ink); }
+
+.h-ko{ font-size:24px; font-weight:700; letter-spacing:-.02em; margin:0 0 6px; }
+.sub{ font-size:13px; color:var(--ink-3); margin:0 0 var(--s4); }
+.sub a{ color:var(--ink-2); }
+.field{ margin-bottom:var(--s3); }
+.field label{ display:block; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-bottom:var(--s1); }
+.input-wrap{ position:relative; }
+.field input{ width:100%; padding:14px; border:1px solid var(--line-2); border-radius:2px; background:var(--surface); font-size:15px; color:var(--ink); transition:border-color .18s; }
+.field input:focus{ outline:none; border-color:var(--ink); }
+.field input[aria-invalid="true"]{ border-color:var(--danger); }
+.hint{ font-size:12px; color:var(--ink-3); margin-top:6px; min-height:18px; }
+.hint.bad{ color:var(--danger); }
+.hint.good{ color:var(--ok); }
+.rules{ display:flex; gap:var(--s2); margin-top:8px; font-size:12px; color:var(--ink-3); flex-wrap:wrap; }
+.rules span::before{ content:"○ "; }
+.rules span.ok{ color:var(--ok); }
+.rules span.ok::before{ content:"● "; }
+.peek{ position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:0; padding:8px; font-size:11px; letter-spacing:.06em; color:var(--ink-3); cursor:pointer; }
+.peek:hover{ color:var(--ink); }
+
+.agree{ border-top:1px solid var(--line); border-bottom:1px solid var(--line); padding:var(--s2) 0; margin:var(--s4) 0 var(--s3); }
+.agree label{ display:flex; gap:10px; align-items:flex-start; font-size:14px; color:var(--ink-2); cursor:pointer; }
+.agree input{ margin-top:5px; flex:none; accent-color:var(--ink); width:16px; height:16px; }
+.agree b{ color:var(--ink); }
+.agree details{ margin:var(--s1) 0 0 26px; }
+.agree summary{ cursor:pointer; font-size:12px; color:var(--ink-3); list-style:none; }
+.agree summary::-webkit-details-marker{ display:none; }
+.agree summary::after{ content:' +'; }
+.agree details[open] summary::after{ content:' –'; }
+.agree table{ width:100%; border-collapse:collapse; margin-top:var(--s1); font-size:12px; color:var(--ink-2); }
+.agree th, .agree td{ text-align:left; padding:8px 8px 8px 0; border-top:1px solid var(--line); vertical-align:top; font-weight:400; }
+.agree th{ color:var(--ink-3); width:84px; }
+
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px 26px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; font-weight:500; letter-spacing:.06em; text-decoration:none; cursor:pointer; border-radius:2px; transition:background .18s, color .18s; }
+.btn:hover{ background:transparent; color:var(--ink); }
+.btn[disabled]{ background:var(--line); border-color:var(--line); color:var(--ink-3); cursor:not-allowed; }
+.err-box{ margin:0 0 var(--s3); padding:12px 14px; background:var(--danger-bg); border-left:2px solid var(--danger); color:var(--danger); font-size:13px; }
+.err-box a{ color:var(--danger); font-weight:700; }
+.spinner{ width:14px; height:14px; border:1px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+footer{ background:var(--dark); color:rgba(255,255,255,.5); padding:var(--s4) 0; font-size:11px; }
+footer .wrap{ display:flex; justify-content:space-between; gap:var(--s3); flex-wrap:wrap; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="index.html" class="wordmark">HAIRMATCH</a>
+    <a class="link" href="index.html">처음으로</a>
+  </div>
+</header>
+
+<main class="auth">
+  <section class="intro">
+    <div>
+      <p class="eyebrow">Create Account</p>
+      <h1 class="display">Keep your<br><em>looks.</em></h1>
+      <p class="lead">가입하면 지금 이 브라우저에 남은 분석 기록과 사진도 그대로 계정으로 옮겨져요.</p>
+      <div class="store">
+        <div><span class="k">Saved</span><span class="v">이름, 이메일, <b>암호화된</b> 비밀번호</span></div>
+        <div><span class="k">Not Saved</span><span class="v">업로드한 얼굴 원본 사진</span></div>
+        <div><span class="k">Photos</span><span class="v">내가 저장을 누른 합성 결과만</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane">
+    <div>
+      <h2 class="h-ko">회원가입</h2>
+      <p class="sub">이미 계정이 있나요? <a id="toLogin" href="log.html">로그인</a></p>
+
+      <form id="form" novalidate>
+        <div class="err-box" id="err" role="alert" hidden></div>
+
+        <div class="field">
+          <label for="name">Name</label>
+          <input id="name" autocomplete="nickname" maxlength="20" placeholder="화면에 보일 이름 (20자 이내)" required>
+          <div class="hint" id="hName"></div>
+        </div>
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required>
+          <div class="hint" id="hEmail"></div>
+        </div>
+        <div class="field">
+          <label for="pw">Password</label>
+          <div class="input-wrap">
+            <input id="pw" type="password" autocomplete="new-password" maxlength="128" placeholder="비밀번호" required style="padding-right:64px">
+            <button type="button" class="peek" data-for="pw" aria-label="비밀번호 보기">보기</button>
+          </div>
+          <div class="rules" id="rules" aria-live="polite">
+            <span data-r="len">8자 이상</span><span data-r="alpha">영문 포함</span><span data-r="digit">숫자 포함</span>
+          </div>
+        </div>
+        <div class="field">
+          <label for="pw2">Confirm Password</label>
+          <input id="pw2" type="password" autocomplete="new-password" maxlength="128" placeholder="비밀번호 다시 입력" required>
+          <div class="hint" id="hPw2"></div>
+        </div>
+
+        <div class="agree">
+          <label><input type="checkbox" id="agree"><span><b>(필수)</b> 개인정보 수집·이용에 동의합니다</span></label>
+          <details>
+            <summary>자세히 보기</summary>
+            <table>
+              <tr><th>수집 항목</th><td>이름, 이메일, 비밀번호(암호화), 얼굴형 분석 결과, 저장한 합성 사진</td></tr>
+              <tr><th>이용 목적</th><td>로그인, 마이페이지 기록 보관, 생성 횟수 관리</td></tr>
+              <tr><th>보관 기간</th><td>회원 탈퇴 시 즉시 삭제</td></tr>
+              <tr><th>거부 권리</th><td>동의하지 않으면 가입할 수 없지만, 로그인 없이 얼굴형 분석은 이용할 수 있어요</td></tr>
+            </table>
+          </details>
+        </div>
+
+        <button class="btn" id="submit" type="submit" disabled>가입하기</button>
+      </form>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>HAIRMATCH</span>
+    <span>업로드한 얼굴 원본 사진은 저장하지 않습니다</span>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const NEXT = HM_AUTH.safeNext(params.get('next'), 'mypage.html');
+const $ = id => document.getElementById(id);
+const EMAIL_RE = /^[^@\s]{1,64}@[^@\s]+\.[A-Za-z]{2,}$/;     // 서버 auth_api.EMAIL_RE 와 같다
+
+$('toLogin').href = 'log.html' + (params.get('next') ? '?next=' + encodeURIComponent(NEXT) : '');
+HM_AUTH.ready.then(me => { if (me.logged_in && !me.offline) location.replace(NEXT); });
+
+document.querySelectorAll('.peek').forEach(b => b.addEventListener('click', () => {
+  const i = $(b.dataset.for), show = i.type === 'password';
+  i.type = show ? 'text' : 'password'; $('pw2').type = i.type;
+  b.textContent = show ? '숨기기' : '보기';
+}));
+
+/* ── 입력하는 동안 확인 ── */
+const touched = new Set();
+function rules(pw) {
+  return { len: pw.length >= 8, alpha: /[A-Za-z]/.test(pw), digit: /\d/.test(pw) };
+}
+function check() {
+  const name = $('name').value.trim(), email = $('email').value.trim();
+  const pw = $('pw').value, pw2 = $('pw2').value;
+  const r = rules(pw);
+  document.querySelectorAll('#rules span').forEach(s => s.classList.toggle('ok', r[s.dataset.r]));
+
+  const okName  = name.length >= 1 && name.length <= 20;
+  const okEmail = EMAIL_RE.test(email);
+  const okPw    = r.len && r.alpha && r.digit;
+  const okPw2   = pw2.length > 0 && pw === pw2;
+
+  hint('name',  'hName',  touched.has('name')  && !okName,  '이름을 입력해 주세요.');
+  hint('email', 'hEmail', touched.has('email') && !okEmail, '이메일 형식을 확인해 주세요.');
+  if (pw2) {
+    $('hPw2').textContent = okPw2 ? '비밀번호가 일치해요.' : '비밀번호가 서로 달라요.';
+    $('hPw2').className = 'hint ' + (okPw2 ? 'good' : 'bad');
+    $('pw2').setAttribute('aria-invalid', !okPw2);
+  } else { $('hPw2').textContent = ''; $('pw2').removeAttribute('aria-invalid'); }
+
+  $('submit').disabled = !(okName && okEmail && okPw && okPw2 && $('agree').checked);
+}
+function hint(inputId, hintId, bad, msg) {
+  $(hintId).textContent = bad ? msg : '';
+  $(hintId).className = 'hint' + (bad ? ' bad' : '');
+  $(inputId).setAttribute('aria-invalid', bad);
+}
+['name', 'email', 'pw', 'pw2'].forEach(id => {
+  $(id).addEventListener('input', check);
+  $(id).addEventListener('blur', () => { touched.add(id); check(); });
+});
+$('agree').addEventListener('change', check);
+
+/* ── 가입 ── */
+const MSG = {
+  INVALID_EMAIL : '이메일 형식을 확인해 주세요.',
+  INVALID_NAME  : '이름은 1~20자로 입력해 주세요.',
+  WEAK_PASSWORD : '비밀번호는 8자 이상, 영문과 숫자를 함께 써 주세요.',
+  AGREE_REQUIRED: '개인정보 수집·이용에 동의해 주세요.',
+};
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  if ($('submit').disabled) return;
+  $('err').hidden = true;
+  const btn = $('submit');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>가입하는 중';
+  try {
+    await HM_AUTH.signup({ name: $('name').value.trim(), email: $('email').value.trim(),
+                           password: $('pw').value, agree: $('agree').checked });
+    location.replace(NEXT);
+  } catch (err) {
+    const box = $('err');
+    if (err.code === 'EMAIL_TAKEN') {
+      const q = new URLSearchParams({ email: $('email').value.trim() });
+      if (params.get('next')) q.set('next', NEXT);
+      box.innerHTML = `이미 가입된 이메일이에요. <a href="log.html?${q}">로그인하기</a>`;
+      $('email').setAttribute('aria-invalid', true);
+    } else {
+      box.textContent = MSG[err.code] || '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.';
+    }
+    box.hidden = false;
+    btn.textContent = '가입하기'; check();
+  }
+});
+</script>
+</body>
+</html>

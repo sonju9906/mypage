@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HAIRMATCH — 로그인</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link rel="stylesheet" as="style" crossorigin
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css">
+<!--
+  log.html — 로그인
+  index.html / a.html / mypage.html 과 같은 토큰. 서버는 auth_api.py (POST /auth/login).
+  ?next=a.html 처럼 오면 로그인 뒤 그 화면으로 돌아간다(우리 사이트의 .html 만 허용).
+-->
+<style>
+:root{
+  --ink:#16130F; --ink-2:#3D362D; --ink-3:#7A7168;
+  --line:#E4DED4; --line-2:#CFC6B9;
+  --paper:#FBF9F6; --paper-2:#F3EEE7; --surface:#FFFFFF;
+  --accent:#8A7355; --dark:#16130F;
+  --danger:#9A3B2E; --danger-bg:#F8EEEA;
+  --s1:8px; --s2:16px; --s3:24px; --s4:32px; --s5:48px; --s6:64px; --s7:96px;
+  --serif:'Cormorant Garamond', Georgia, serif;
+  --sans:'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+}
+*{ box-sizing:border-box; }
+body{ margin:0; background:var(--paper); color:var(--ink); font-family:var(--sans); font-size:15px; line-height:1.75; -webkit-font-smoothing:antialiased; min-height:100vh; display:flex; flex-direction:column; }
+button, input{ font-family:inherit; }
+[hidden]{ display:none !important; }
+.wrap{ max-width:1240px; margin:0 auto; padding:0 var(--s4); width:100%; }
+@media (max-width:640px){ .wrap{ padding:0 var(--s2); } }
+
+/* 상단바 — index.html 과 동일 */
+.topbar{ background:#16130F; color:#FBF9F6; }
+.topbar .wrap{ display:flex; align-items:center; justify-content:space-between; height:60px; }
+.wordmark{ font-size:14px; font-weight:600; letter-spacing:.2em; text-decoration:none; color:#FBF9F6; }
+.topbar a.link{ font-size:12px; color:rgba(251,249,246,.78); text-decoration:none; letter-spacing:.04em; }
+.topbar a.link:hover{ color:#FFF; }
+
+/* 본문 — 왼쪽 안내 / 오른쪽 폼 */
+.auth{ flex:1; display:grid; grid-template-columns:1fr 1fr; }
+@media (max-width:900px){ .auth{ grid-template-columns:1fr; } }
+.auth .intro{ background:var(--paper-2); border-right:1px solid var(--line); display:flex; align-items:center; justify-content:flex-end; padding:var(--s7) var(--s6); }
+.auth .intro > div{ max-width:440px; width:100%; }
+.auth .pane{ display:flex; align-items:center; padding:var(--s7) var(--s6); }
+.auth .pane > div{ max-width:400px; width:100%; }
+@media (max-width:900px){
+  .auth .intro{ border-right:0; border-bottom:1px solid var(--line); padding:var(--s5) var(--s4) var(--s4); justify-content:flex-start; }
+  .auth .pane{ padding:var(--s5) var(--s4) var(--s6); }
+  .auth .intro .perks{ display:none; }
+}
+@media (max-width:640px){ .auth .intro, .auth .pane{ padding-left:var(--s2); padding-right:var(--s2); } }
+
+.eyebrow{ font-size:11px; font-weight:500; letter-spacing:.18em; text-transform:uppercase; color:var(--ink-3); margin:0 0 var(--s2); }
+.display{ font-family:var(--serif); font-weight:300; font-size:clamp(44px,5.4vw,76px); line-height:1; letter-spacing:-.01em; margin:0; }
+.display em{ font-style:italic; }
+.lead{ color:var(--ink-2); margin:var(--s3) 0 0; max-width:36ch; }
+.perks{ list-style:none; margin:var(--s5) 0 0; padding:0; border-top:1px solid var(--ink); }
+.perks li{ display:grid; grid-template-columns:40px 1fr; padding:14px 0; border-bottom:1px solid var(--line); font-size:14px; color:var(--ink-2); }
+.perks li b{ font-family:var(--serif); font-weight:400; font-size:20px; color:var(--accent); line-height:1.3; }
+
+/* 폼 */
+.h-ko{ font-size:24px; font-weight:700; letter-spacing:-.02em; margin:0 0 6px; }
+.sub{ font-size:13px; color:var(--ink-3); margin:0 0 var(--s4); }
+.field{ margin-bottom:var(--s3); }
+.field label{ display:block; font-size:10px; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-3); margin-bottom:var(--s1); }
+.input-wrap{ position:relative; }
+.field input{ width:100%; padding:14px; border:1px solid var(--line-2); border-radius:2px; background:var(--surface); font-size:15px; color:var(--ink); transition:border-color .18s; }
+.field input:focus{ outline:none; border-color:var(--ink); }
+.field input[aria-invalid="true"]{ border-color:var(--danger); }
+.peek{ position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:0; padding:8px; font-size:11px; letter-spacing:.06em; color:var(--ink-3); cursor:pointer; }
+.peek:hover{ color:var(--ink); }
+.btn{ display:inline-flex; align-items:center; justify-content:center; gap:8px; width:100%; padding:15px 26px; border:1px solid var(--ink); background:var(--ink); color:var(--paper); font-size:13px; font-weight:500; letter-spacing:.06em; text-decoration:none; cursor:pointer; border-radius:2px; transition:background .18s, color .18s; }
+.btn:hover{ background:transparent; color:var(--ink); }
+.btn[disabled]{ background:var(--line); border-color:var(--line); color:var(--ink-3); cursor:not-allowed; }
+.btn.line{ background:transparent; color:var(--ink); }
+.btn.line:hover{ background:var(--ink); color:var(--paper); }
+.err-box{ margin:0 0 var(--s3); padding:12px 14px; background:var(--danger-bg); border-left:2px solid var(--danger); color:var(--danger); font-size:13px; }
+.divider{ display:flex; align-items:center; gap:var(--s2); margin:var(--s4) 0; font-size:11px; letter-spacing:.14em; color:var(--ink-3); }
+.divider::before, .divider::after{ content:""; flex:1; height:1px; background:var(--line); }
+.foot-note{ margin-top:var(--s3); font-size:12px; color:var(--ink-3); text-align:center; }
+.foot-note a{ color:var(--ink-2); }
+.spinner{ width:14px; height:14px; border:1px solid currentColor; border-top-color:transparent; border-radius:50%; animation:spin .8s linear infinite; }
+@keyframes spin{ to{ transform:rotate(360deg); } }
+
+footer{ background:var(--dark); color:rgba(255,255,255,.5); padding:var(--s4) 0; font-size:11px; }
+footer .wrap{ display:flex; justify-content:space-between; gap:var(--s3); flex-wrap:wrap; }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <a href="index.html" class="wordmark">HAIRMATCH</a>
+    <a class="link" href="index.html">처음으로</a>
+  </div>
+</header>
+
+<main class="auth">
+  <section class="intro">
+    <div>
+      <p class="eyebrow">Sign In</p>
+      <h1 class="display">Welcome<br><em>back.</em></h1>
+      <p class="lead">로그인하면 내 분석 기록과 저장한 사진을 어느 기기에서든 다시 볼 수 있어요.</p>
+      <ul class="perks">
+        <li><b>01</b><span>얼굴형 분석 기록 보관</span></li>
+        <li><b>02</b><span>마음에 든 합성 사진 저장</span></li>
+        <li><b>03</b><span>프롬프트로 직접 만들기 무료 2회</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="pane">
+    <div>
+      <h2 class="h-ko">로그인</h2>
+      <p class="sub">가입한 이메일과 비밀번호를 입력해 주세요.</p>
+
+      <form id="form" novalidate>
+        <div class="err-box" id="err" role="alert" hidden></div>
+
+        <div class="field">
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" inputmode="email" placeholder="name@example.com" required>
+        </div>
+        <div class="field">
+          <label for="pw">Password</label>
+          <div class="input-wrap">
+            <input id="pw" type="password" autocomplete="current-password" placeholder="비밀번호" required style="padding-right:64px">
+            <button type="button" class="peek" data-for="pw" aria-label="비밀번호 보기">보기</button>
+          </div>
+        </div>
+
+        <button class="btn" id="submit" type="submit">로그인</button>
+      </form>
+
+      <div class="divider">처음이신가요</div>
+      <a class="btn line" id="toSignup" href="signin.html">회원가입</a>
+
+      <p class="foot-note">로그인하지 않아도 얼굴형 분석은 이용할 수 있어요. <a id="toGuest" href="index.html">그냥 둘러보기</a></p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span>HAIRMATCH</span>
+    <span>비밀번호는 암호화해서 저장하며 누구도 원문을 볼 수 없습니다</span>
+  </div>
+</footer>
+
+<script src="config.js"></script>
+<script src="auth.js"></script>
+<script>
+const params = new URLSearchParams(location.search);
+const NEXT = HM_AUTH.safeNext(params.get('next'), 'mypage.html');
+const $ = id => document.getElementById(id);
+
+// 회원가입으로 가도 돌아갈 곳을 잃지 않게
+$('toSignup').href = 'signin.html' + (params.get('next') ? '?next=' + encodeURIComponent(NEXT) : '');
+if (params.get('email')) $('email').value = params.get('email');
+
+// 이미 로그인돼 있으면 바로 보낸다
+HM_AUTH.ready.then(me => { if (me.logged_in && !me.offline) location.replace(NEXT); });
+
+document.querySelectorAll('.peek').forEach(b => b.addEventListener('click', () => {
+  const i = $(b.dataset.for), show = i.type === 'password';
+  i.type = show ? 'text' : 'password';
+  b.textContent = show ? '숨기기' : '보기';
+  b.setAttribute('aria-label', show ? '비밀번호 숨기기' : '비밀번호 보기');
+}));
+
+const MSG = {
+  BAD_CREDENTIALS  : '이메일 또는 비밀번호가 올바르지 않아요.',
+  TOO_MANY_ATTEMPTS: '로그인 시도가 너무 많아요. 10분 뒤에 다시 시도해 주세요.',
+};
+function showErr(m, field) {
+  $('err').textContent = m; $('err').hidden = false;
+  ['email', 'pw'].forEach(id => $(id).setAttribute('aria-invalid', id === field || field === 'both'));
+}
+
+$('form').addEventListener('submit', async e => {
+  e.preventDefault();
+  $('err').hidden = true;
+  const email = $('email').value.trim(), pw = $('pw').value;
+  if (!email) return showErr('이메일을 입력해 주세요.', 'email'), $('email').focus();
+  if (!pw)    return showErr('비밀번호를 입력해 주세요.', 'pw'), $('pw').focus();
+
+  const btn = $('submit');
+  btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>로그인 중';
+  try {
+    await HM_AUTH.login(email, pw);
+    location.replace(NEXT);
+  } catch (err) {
+    showErr(MSG[err.code] || '서버에 연결하지 못했어요. 잠시 후 다시 시도해 주세요.', err.code === 'BAD_CREDENTIALS' ? 'both' : null);
+    $('pw').value = ''; $('pw').focus();
+    btn.disabled = false; btn.textContent = '로그인';
+  }
+});
+['email', 'pw'].forEach(id => $(id).addEventListener('input', () => $(id).removeAttribute('aria-invalid')));
+</script>
+</body>
+</html>
