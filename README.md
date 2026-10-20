@@ -17,30 +17,55 @@ start_all.bat (새 파일): 합성 서버와 웹서버를 창 두 개로 동시�
 
 
 파일 위치
+
 D:\hairMatch_demo2\
+
 ├─ setup_env.bat            (기존 그대로)
+
 ├─ start_all.bat            ★ 새로 추가
+
 ├─ inference\               (기존 그대로)
+
 ├─ HairFastGAN\             (기존 그대로)
+
 └─ web\
+
    ├─ web_main.py           ★ 교체
+   
    ├─ db_setup_v2.py        ★ 교체 (회원 테이블 5개 추가된 버전)
+   
    ├─ gemini_api.py         ★ 교체 (로그인 연동 버전)
+   
    ├─ map_test_server.py    ★ 교체
+   
    ├─ auth_api.py           ★ 새로 추가 — 회원가입/로그인 API
+   
    ├─ mypage_api.py         ★ 새로 추가 — 마이페이지 API
+   
    ├─ test_accounts_db.py   ★ 새로 추가 — 점검용
+   
    ├─ run_web.bat           ★ 새로 추가
+   
    ├─ synth_proxy.py, salons_api.py, prompts.py,
+   
    │  face_shape_cnn.py, 09_predict.py, *.keras, *.joblib, venv_web\   (기존 그대로, 건드리지 않음)
+   
    ├─ gen_store\            (자동 생성 — 저장한 사진이 들어감)
+   
    └─ static\
+   
       ├─ log.html           ★ 로그인 화면
+      
       ├─ signin.html        ★ 회원가입 화면
+      
       ├─ mypage.html        ★ 마이페이지
+      
       ├─ auth.js            ★ 모든 화면 공통 로그인 처리
+      
       ├─ index.html, a.html ★ 교체 (상단 로그인 버튼 연결된 버전)
+      
       └─ config.js, img\    (기존 그대로 — 압축에 없으니 지우면 안 돼요)
+      
 
 
 적용 순서
