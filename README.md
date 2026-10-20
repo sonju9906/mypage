@@ -1,7 +1,7 @@
 # mypage
 web
 바꾼 부분
-
+https://github.com/sonju9906/mypage/blob/031b426bfb8203822cc8345211d40970ec6a8665/hairmatch_login_mypage_final.zip
 web_main.py
 지금 PC에 있는 web_main.py는 로그인·마이페이지가 연결되기 전 버전이라 교체가 필요해요.
 
